@@ -25,9 +25,8 @@ import StudentLayout from './components/student/studentlayout';
 import UnauthorizedPage from './pages/UnauthorizedPage/UnauthorizedPage';
 import Technical from './pages/student/techevent';
 import NonTech from './pages/student/nontech';
-import Merchendize from './pages/student/merch';
-import Dashboard from './pages/admin/dashboard';
 import UserDashboard from './pages/student/dashboard';
+import Merchandise from './pages/student/merch';
 
 function App() {
   const dispatch = useDispatch();
@@ -93,7 +92,7 @@ function App() {
           <Route path="home" element={<StudentHome />} />
           <Route path="techevent" element={<Technical />} />
           <Route path="nontechevent" element={<NonTech />} />
-          <Route path="merchendize" element={<Merchendize />} />
+          <Route path="merchendise" element={<Merchandise />} />
           <Route path="dashboard" element={<UserDashboard />} />
         </Route>
 
