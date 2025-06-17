@@ -1,35 +1,108 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { checkAuth } from './stores/auth-slice/index';
+import CheckAuth from './components/common/check-auth';
+
+import './index.css'; // Or wherever you added the Tailwind directives
+
+// Auth pages
+import Login from './pages/auth/login';
+import Register from './pages/auth/register';
+
+// Role-based Home Pages
+import AdminDashboard from './pages/admin/dashboard';
+import CoordinatorHome from './pages/coordinator/chome';
+import StudentHome from './pages/student/home';
+
+// Layouts (optional, or use fragments if not needed)
+import AuthLayout from './components/auth/layout';
+import AdminLayout from './components/admin/AdminLayout';
+import CoordinatorLayout from './components/coordinator/coordinatorlayout';
+import StudentLayout from './components/student/studentlayout';
+
+// Unauthorized fallback
+import UnauthorizedPage from './pages/UnauthorizedPage/UnauthorizedPage';
+import Technical from './pages/student/techevent';
+import NonTech from './pages/student/nontech';
+import Merchendize from './pages/student/merch';
+import Dashboard from './pages/admin/dashboard';
+import UserDashboard from './pages/student/dashboard';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const dispatch = useDispatch();
+  const { isAuthenticated, isLoading, user } = useSelector((state) => state.auth);
+
+  // Auto check auth on app load
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, [dispatch]);
+
+  if (isLoading) return <div className="text-center mt-20">Loading...</div>;
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Router>
+      <Routes>
+
+        {/* Auth Routes */}
+        <Route
+          path="/auth"
+          element={
+            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+              <AuthLayout />
+            </CheckAuth>
+          }
+        >
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+        </Route>
+
+        {/* Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+              <AdminLayout />
+            </CheckAuth>
+          }
+        >
+          <Route path="dashboard" element={<AdminDashboard />} />
+        </Route>
+
+        {/* Coordinator Routes */}
+        <Route
+          path="/coordinator"
+          element={
+            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+              <CoordinatorLayout />
+            </CheckAuth>
+          }
+        >
+          <Route path="home" element={<CoordinatorHome />} />
+        </Route>
+
+        {/* Student Routes */}
+        <Route
+          path="/student"
+          element={
+            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+              <StudentLayout />
+            </CheckAuth>
+          }
+        >  
+          <Route path="home" element={<StudentHome />} />
+          <Route path="techevent" element={<Technical />} />
+          <Route path="nontechevent" element={<NonTech />} />
+          <Route path="merchendize" element={<Merchendize />} />
+          <Route path="dashboard" element={<UserDashboard />} />
+        </Route>
+
+        {/* Unauthorized access fallback */}
+        <Route path="/unauth-page" element={<UnauthorizedPage />} />
+
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;

@@ -1,0 +1,54 @@
+require("dotenv").config(); // Load environment variables
+
+const express = require("express");
+const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const path = require("path");
+
+// Import Routes
+const authRouter = require("./routes/auth/auth-route"); // fix to match file name
+
+const admineventRoute= require("./routes/admin/Event-route");
+const studenteventRoute= require("./routes/student/Event-route")
+
+
+const app = express();
+const PORT = process.env.PORT || 5001;
+
+// ✅ MongoDB Connection
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
+
+// ✅ Middleware
+app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // your frontend
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
+
+// ✅ Routes
+app.use("/api/auth", authRouter);
+
+// event routes
+app.use("/api/admin/event",admineventRoute);
+app.use("/api/student/event",studenteventRoute );
+
+
+
+
+// ✅ Base Health Check Route
+app.get("/", (req, res) => {
+  res.send("🎉 Event Management Backend is running");
+});
+
+// ✅ Server Listener
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
