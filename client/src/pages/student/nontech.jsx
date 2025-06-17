@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Card, CardContent, CardTitle } from '../../components/ui/card';
 import {
@@ -6,7 +6,6 @@ import {
   Trophy, Camera, Code, Gift, Search
 } from 'lucide-react';
 import { fetchAllFilteredEvents } from '../../stores/student/event-slice/index';
-import debounce from 'lodash.debounce';
 
 const gradientClasses = [
   'from-purple-500 to-pink-500',
@@ -33,32 +32,34 @@ const NonTech = () => {
   const dispatch = useDispatch();
   const { eventList = [], isLoading } = useSelector((state) => state.events || {});
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredList, setFilteredList] = useState([]);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
     dispatch(fetchAllFilteredEvents({}));
   }, [dispatch]);
 
+  // Debounce logic without lodash
   useEffect(() => {
-    const filtered = eventList.filter(event =>
-      event.type === 'Non-Technical' &&
-      (event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.organisation.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-    setFilteredList(filtered);
-  }, [eventList, searchTerm]);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500); // debounce delay
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
-  const debouncedSearch = useCallback(
-    debounce((value) => {
-      setSearchTerm(value);
-    }, 300),
-    []
-  );
+  const filteredList = useMemo(() => {
+    const term = debouncedSearch.toLowerCase();
+    return eventList.filter(
+      (event) =>
+        event.type === 'Non-Technical' &&
+        (event.name.toLowerCase().includes(term) ||
+         event.organisation.toLowerCase().includes(term))
+    );
+  }, [eventList, debouncedSearch]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-6">
       <div className="max-w-7xl mx-auto mb-12">
-        {/* Heading */}
+        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-pink-600 to-yellow-500 bg-clip-text text-transparent mb-4">
             Explore Non-Technical Events
@@ -68,9 +69,7 @@ const NonTech = () => {
           </p>
         </div>
 
-        {/* Search Bar */}
-       
-        {/* Stats Cards */}
+        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
           {[{
             label: 'Non-Tech Events',
@@ -107,24 +106,25 @@ const NonTech = () => {
           ))}
         </div>
 
+        {/* Search Input */}
         <div className="mb-8 max-w-xl mx-auto">
           <div className="flex items-center bg-white shadow-md rounded-full px-4 py-2 border border-gray-200">
             <Search className="text-gray-500 w-5 h-5 mr-2" />
             <input
               type="text"
               value={searchTerm}
-              onChange={(e) => debouncedSearch(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by event or organisation name..."
               className="w-full outline-none text-sm text-gray-700 bg-transparent"
             />
           </div>
         </div>
 
-        {/* Events Grid */}
+        {/* Events List */}
         {isLoading ? (
           <p className="text-center text-lg text-gray-500">Loading events...</p>
         ) : filteredList.length === 0 ? (
-          <p className="text-center text-lg text-gray-500">No non-technical events found.</p>
+          <p className="text-center text-lg text-gray-500">No non-technical events found for "{debouncedSearch}".</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredList.map((event, index) => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Card, CardContent, CardTitle } from '../../components/ui/card';
 import {
@@ -6,7 +6,6 @@ import {
   Trophy, Camera, Code, Gift, Search
 } from 'lucide-react';
 import { fetchAllFilteredEvents } from '../../stores/student/event-slice/index';
-import debounce from 'lodash.debounce';
 
 const gradientClasses = [
   'from-purple-500 to-pink-500',
@@ -33,27 +32,30 @@ const Technical = () => {
   const dispatch = useDispatch();
   const { eventList = [], isLoading } = useSelector((state) => state.events || {});
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filteredList, setFilteredList] = useState([]);
 
   useEffect(() => {
     dispatch(fetchAllFilteredEvents({}));
   }, [dispatch]);
 
+  // Custom debounce logic
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
   useEffect(() => {
     const filtered = eventList.filter(event =>
       event.type === 'Technical' &&
-      (event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.organisation.toLowerCase().includes(searchTerm.toLowerCase()))
+      (event.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        event.organisation.toLowerCase().includes(debouncedSearch.toLowerCase()))
     );
     setFilteredList(filtered);
-  }, [eventList, searchTerm]);
-
-  const debouncedSearch = useCallback(
-    debounce((value) => {
-      setSearchTerm(value);
-    }, 300),
-    []
-  );
+  }, [eventList, debouncedSearch]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-6">
@@ -67,9 +69,6 @@ const Technical = () => {
             Participate in coding contests, robotics races, and tech fests to challenge your skills!
           </p>
         </div>
-
-        {/* Search Bar */}
-    
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
@@ -93,18 +92,20 @@ const Technical = () => {
           ))}
         </div>
 
+        {/* Search Bar */}
         <div className="mb-8 max-w-xl mx-auto">
           <div className="flex items-center bg-white shadow-md rounded-full px-4 py-2 border border-gray-200">
             <Search className="text-gray-500 w-5 h-5 mr-2" />
             <input
               type="text"
               value={searchTerm}
-              onChange={(e) => debouncedSearch(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by event or organisation name..."
               className="w-full outline-none text-sm text-gray-700 bg-transparent"
             />
           </div>
         </div>
+
         {/* Event Cards */}
         {isLoading ? (
           <p className="text-center text-lg text-gray-500">Loading events...</p>
