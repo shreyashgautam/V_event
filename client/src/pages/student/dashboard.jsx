@@ -1,387 +1,452 @@
-import React, { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+"use client"
 
-import { Input } from '../../components/ui/input'
-import { Label } from '../../components/ui/label'
-import { logout } from '../../stores/auth-slice'
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  Trophy, 
-  Users, 
-  Award, 
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  Button
+} from '../../components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from '../../components/ui/card'
+import {
+  Input
+} from '../../components/ui/input'
+import {
+  Label
+} from '../../components/ui/label'
+import {
+  logout
+} from '../../stores/auth-slice'
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  Trophy,
+  Users,
+  Award,
   LogOut,
   Plus,
   Settings,
   Bell,
   Star,
   MapPin,
-  Clock
+  Clock,
+  Trash2,
+  UserCheck,
+  Crown
 } from 'lucide-react'
+import {
+  createTeam,
+  fetchTeamsByLeader,
+  deleteTeam
+} from '../../stores/student/team-slice/index'
 
-const participatedEvents = [
-  {
-    eventName: "CodeX Hackathon",
-    type: "Tech",
-    teamName: "ByteBlasters",
-    role: "Leader",
-    date: "2025-07-05",
-    status: "Completed",
-    position: "1st Place",
-    points: 500
-  },
-  {
-    eventName: "Mock IPL Auction",
-    type: "Non-Tech",
-    teamName: "Auction Kings",
-    role: "Member",
-    date: "2025-07-06",
-    status: "Completed",
-    position: "3rd Place",
-    points: 200
-  },
-  {
-    eventName: "Design T-Shirt",
-    type: "Merchandise",
-    teamName: "TrendSetters",
-    role: "Designer",
-    date: "2025-07-07",
-    status: "In Progress",
-    position: "-",
-    points: 0
-  },
-  {
-    eventName: "AI Challenge",
-    type: "Tech",
-    teamName: "Neural Networks",
-    role: "Developer",
-    date: "2025-06-15",
-    status: "Completed",
-    position: "2nd Place",
-    points: 350
-  }
-];
+// ✅ Sonner toast
+import { toast } from 'sonner'
 
 const UserDashboard = () => {
-  const dispatch = useDispatch();
-  const { user, isLoading } = useSelector(state => state.auth);
+  const dispatch = useDispatch()
+  const { user, isLoading: authLoading } = useSelector(state => state.auth)
+  const {
+    teams,
+    loading: teamsLoading,
+    error: teamsError
+  } = useSelector(state => state.team)
+
   const [teamForm, setTeamForm] = useState({
     teamName: '',
-    eventName: '',
     members: ''
-  });
+  })
 
   const handleLogout = async () => {
     try {
-      await dispatch(logout()).unwrap();
-      // Navigate to login page or handle logout success
-    } catch (error) {
-      console.error('Logout failed:', error);
+      await dispatch(logout()).unwrap()
+      toast.success("Logged out successfully", {
+        description: "You have been safely logged out of your account."
+      })
+      // redirect to login page as needed
+    } catch (err) {
+      console.error(err)
+      toast.error("Logout failed", {
+        description: "An error occurred while logging out."
+      })
     }
-  };
+  }
 
-  const handleTeamSubmit = () => {
-    if (!teamForm.teamName || !teamForm.eventName || !teamForm.members) {
-      alert('Please fill in all required fields');
-      return;
+  useEffect(() => {
+    if (user?.regNo) {
+      dispatch(fetchTeamsByLeader(user.regNo))
     }
-    console.log('Creating team:', teamForm);
-    // Handle team creation logic here
-    setTeamForm({ teamName: '', eventName: '', members: '' });
-    alert('Team created successfully!');
-  };
+  }, [dispatch, user])
 
-  const handleInputChange = (field, value) => {
+  const handleInput = (name, value) =>
     setTeamForm(prev => ({
       ...prev,
-      [field]: value
-    }));
-  };
+      [name]: value
+    }))
 
-  const totalPoints = participatedEvents.reduce((sum, event) => sum + event.points, 0);
-  const completedEvents = participatedEvents.filter(event => event.status === 'Completed').length;
-  const activeEvents = participatedEvents.filter(event => event.status === 'In Progress').length;
+  const handleCreate = async () => {
+    if (!teamForm.teamName || !teamForm.members) {
+      toast.error('Please fill all fields', {
+        description: 'Both team name and members are required to create a team.'
+      })
+      return
+    }
 
-  if (isLoading) {
+    const memberArray = teamForm.members.split(',').map(m => m.trim()).filter(Boolean)
+
+    try {
+      await dispatch(
+        createTeam({
+          teamName: teamForm.teamName,
+          teamLeader: user.regNo,
+          teamMembers: memberArray
+        })
+      ).unwrap()
+
+      toast.success("Team created successfully! 🎉", {
+        description: `Team "${teamForm.teamName}" has been created with ${memberArray.length} members.`,
+        style: {
+          background: "black", // light green
+          color: "white",       // dark green text
+          border: "1px solid #10B981"
+        }
+      })
+      
+      setTeamForm({ teamName: '', members: '' })
+      dispatch(fetchTeamsByLeader(user.regNo))
+    } catch (err) {
+      toast.error("Failed to create team", {
+        description: err.message || "Something went wrong while creating the team.",
+        style: {
+          background: "red", // light green
+          color: "white",       // dark green text
+          border: "1px solid #10B981"
+        }
+      })
+    }
+  }
+
+  const handleDelete = async teamId => {
+    if (window.confirm('Are you sure you want to delete this team?')) {
+      try {
+        await dispatch(deleteTeam({ teamId, regno: user.regNo })).unwrap()
+        
+        toast.success("Team deleted successfully", {
+          description: "The team has been permanently removed.",
+          style: {
+            background: "red", // light green
+            color: "white",       // dark green text
+            border: "1px solid #10B981"
+          },
+          action: {
+            label: "Undo",
+            onClick: () => {
+              toast.info("Undo functionality coming soon!", {
+                description: "This feature will be available in the next update.",
+                style: {
+                  background: "black", // light green
+                  color: "white",       // dark green text
+                  border: "1px solid #10B981"
+                }
+              })
+            }
+          }
+        })
+        
+        dispatch(fetchTeamsByLeader(user.regNo))
+      } catch (err) {
+        toast.error("Failed to delete team", {
+          description: err.message || "Error occurred while deleting the team.",
+          style: {
+            background: "red", // light green
+            color: "white",       // dark green text
+            border: "1px solid #10B981"
+          }
+        })
+      }
+    }
+  }
+
+  const totalPoints = 0 // You can calculate from participatedEvents if available
+
+  // Loading state
+  if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
+      <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin h-16 w-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full mx-auto mb-4" />
+          <p className="text-gray-600 font-medium">Loading your dashboard...</p>
+        </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      {/* Enhanced Header */}
+      <div className="bg-white/80 backdrop-blur-md shadow-lg border-b border-indigo-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
+              <div className="relative">
+                <div className="h-14 w-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex justify-center items-center shadow-lg">
+                  <User className="text-white h-7 w-7" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">
-                  Welcome back, {user?.userName || user?.name || 'User'}!
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Welcome back, {user.userName || user.name}!
                 </h1>
-                <p className="text-gray-600">Manage your events and teams</p>
+                <p className="text-gray-500 font-medium">Manage your events & teams with ease</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <Button variant="outline" size="sm">
-                <Bell className="w-4 h-4 mr-2" />
-                Notifications
-              </Button>
-              <Button variant="outline" size="sm">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="relative border-indigo-200 hover:bg-indigo-50"
+                onClick={() => toast.info("Notifications", { description: "No new notifications" })}
+              >
+                <Bell className="h-4 w-4" />
+                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
               </Button>
               <Button 
-                variant="destructive" 
-                onClick={handleLogout}
-                disabled={isLoading}
-                className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600"
+                size="sm" 
+                variant="outline" 
+                className="border-indigo-200 hover:bg-indigo-50"
+                onClick={() => toast.info("Settings", { description: "Settings panel coming soon!" })}
               >
-                <LogOut className="w-4 h-4 mr-2" />
-                {isLoading ? 'Logging out...' : 'Logout'}
+                <Settings className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white shadow-lg"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
-        {/* User Profile & Stats */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* User Profile Card */}
-          <Card className="lg:col-span-1 bg-gradient-to-br from-purple-50 to-pink-50 border-0 shadow-lg">
-            <CardHeader className="text-center pb-2">
-              <div className="w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mx-auto flex items-center justify-center mb-4">
-                <User className="w-12 h-12 text-white" />
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        {/* Stats Cards Row */}
+    
+
+        {/* Profile & Teams Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Enhanced Profile Card with Complete Personal Details */}
+          <Card className="lg:col-span-1 bg-white/90 backdrop-blur-sm border-0 shadow-xl overflow-hidden">
+            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 h-24"></div>
+            <CardContent className="relative px-6 pb-6">
+              <div className="text-center -mt-12 mb-6">
+                <div className="h-24 w-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full mx-auto flex justify-center items-center shadow-xl border-4 border-white">
+                  <User className="text-white h-10 w-10" />
+                </div>
+                <h3 className="mt-4 text-xl font-bold text-gray-800">
+                  {user.userName || user.name}
+                </h3>
+                <div className="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-sm font-medium mt-2">
+                  <Crown className="h-3 w-3 mr-1" />
+                  {user.role}
+                </div>
               </div>
-              <CardTitle className="text-2xl text-gray-800">
-                {user?.userName || user?.name || 'John Doe'}
-              </CardTitle>
-              <p className="text-gray-600">{user?.role || 'Participant'}</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-3 text-gray-600">
-                <Mail className="w-4 h-4" />
-                <span className="text-sm">{user?.email || 'user@example.com'}</span>
-              </div>
-              <div className="flex items-center space-x-3 text-gray-600">
-                <Phone className="w-4 h-4" />
-                <span className="text-sm">{user?.regNo || '+91 98765 43210'}</span>
-              </div>
-              <div className="flex items-center space-x-3 text-gray-600">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm">Joined {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Dec 2024'}</span>
-              </div>
-              <div className="flex items-center space-x-3 text-gray-600">
-                <MapPin className="w-4 h-4" />
-                <span className="text-sm">{user?.location || 'Mumbai, India'}</span>
+              
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <Mail className="h-5 w-5 text-indigo-500 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 font-medium">Email</p>
+                    <p className="text-sm text-gray-700 truncate">{user.email}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <UserCheck className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 font-medium">Registration Number</p>
+                    <p className="text-sm text-gray-700 font-mono">{user.regNo}</p>
+                  </div>
+                </div>
+                
+          
+                
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <Calendar className="h-5 w-5 text-purple-500 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 font-medium">Member Since</p>
+                    <p className="text-sm text-gray-700">
+                      {new Date(user.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <MapPin className="h-5 w-5 text-red-500 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-500 font-medium">Location</p>
+                    <p className="text-sm text-gray-700">{user.location || 'Not Provided'}</p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Stats Cards */}
-          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-3xl font-bold text-blue-600">{totalPoints}</p>
-                    <p className="text-gray-600 text-sm">Total Points</p>
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <Star className="w-6 h-6 text-blue-600" />
-                  </div>
+          {/* Enhanced My Teams Card */}
+          <Card className="lg:col-span-2 bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
+              <CardTitle className="flex items-center text-xl">
+                <Users className="h-6 w-6 mr-2" />
+                My Teams ({teams.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              {teamsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin h-8 w-8 border-2 border-emerald-200 border-t-emerald-600 rounded-full mx-auto mb-3"></div>
+                  <p className="text-gray-500">Loading teams...</p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-3xl font-bold text-green-600">{completedEvents}</p>
-                    <p className="text-gray-600 text-sm">Events Completed</p>
+              ) : teamsError ? (
+                <div className="text-center py-8">
+                  <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Trophy className="h-8 w-8 text-red-500" />
                   </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <Trophy className="w-6 h-6 text-green-600" />
-                  </div>
+                  <p className="text-red-600 font-medium">{teamsError}</p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-3xl font-bold text-orange-600">{activeEvents}</p>
-                    <p className="text-gray-600 text-sm">Active Events</p>
+              ) : teams.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="h-20 w-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Users className="h-10 w-10 text-gray-400" />
                   </div>
-                  <div className="p-3 bg-orange-100 rounded-full">
-                    <Clock className="w-6 h-6 text-orange-600" />
-                  </div>
+                  <p className="text-gray-500 text-lg font-medium">No teams created yet</p>
+                  <p className="text-gray-400 text-sm mt-1">Create your first team below!</p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              ) : (
+                <div className="space-y-4">
+                  {teams.map((team, index) => (
+                    <div
+                      key={team.teamId || team._id}
+                      className="group p-4 bg-gradient-to-r from-white to-gray-50 rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <div className={`h-3 w-3 rounded-full ${
+                              index % 4 === 0 ? 'bg-blue-500' :
+                              index % 4 === 1 ? 'bg-green-500' :
+                              index % 4 === 2 ? 'bg-purple-500' : 'bg-orange-500'
+                            }`}></div>
+                            <h4 className="font-bold text-gray-800 text-lg">{team.teamName}</h4>
+                          </div>
+                          <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
+                            <Crown className="h-4 w-4 text-yellow-500" />
+                            <span className="font-medium">Leader: {team.teamLeader}</span>
+                          </div>
+                          <div className="flex items-center space-x-2 text-sm text-gray-600">
+                            <Users className="h-4 w-4" />
+                            <span className="font-medium">{team.teamMembers?.length || 0} members:</span>
+                          </div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {team.teamMembers?.map((member, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-medium"
+                              >
+                                {member}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 border-red-200 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => handleDelete(team.teamId || team._id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Participated Events */}
-        <Card className="shadow-lg border-0 bg-white">
-          <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
-            <CardTitle className="flex items-center space-x-2">
-              <Award className="w-5 h-5" />
-              <span>My Participated Events</span>
+        {/* Enhanced Create Team Card */}
+        <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-xl overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+            <CardTitle className="flex items-center text-xl">
+              <Plus className="h-6 w-6 mr-2" />
+              Create New Team
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-50 border-b">
-                    <th className="text-left p-4 font-semibold text-gray-700">Event Name</th>
-                    <th className="text-left p-4 font-semibold text-gray-700">Team Name</th>
-                    <th className="text-left p-4 font-semibold text-gray-700">Role</th>
-                    <th className="text-left p-4 font-semibold text-gray-700">Date</th>
-                    <th className="text-left p-4 font-semibold text-gray-700">Status</th>
-                    <th className="text-left p-4 font-semibold text-gray-700">Position</th>
-                    <th className="text-left p-4 font-semibold text-gray-700">Points</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {participatedEvents.map((event, index) => (
-                    <tr key={index} className="hover:bg-gray-50 transition-colors border-b">
-                      <td className="p-4 font-medium">{event.eventName}</td>
-                      <td className="p-4">
-                        <div className="flex items-center space-x-2">
-                          <Users className="w-4 h-4 text-gray-400" />
-                          <span>{event.teamName}</span>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          event.role === 'Leader' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {event.role}
-                        </span>
-                      </td>
-                      <td className="p-4">{new Date(event.date).toLocaleDateString()}</td>
-                      <td className="p-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          event.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {event.status}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        {event.position !== '-' ? (
-                          <span className="flex items-center space-x-1">
-                            <Trophy className="w-4 h-4 text-yellow-500" />
-                            <span className="font-medium">{event.position}</span>
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="p-4">
-                        <span className="font-bold text-purple-600">
-                          {event.points > 0 ? `+${event.points}` : '-'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Create Team */}
-        <Card className="shadow-lg border-0 bg-white">
-          <CardHeader className="bg-gradient-to-r from-green-500 to-teal-500 text-white rounded-t-lg">
-            <CardTitle className="flex items-center space-x-2">
-              <Plus className="w-5 h-5" />
-              <span>Create New Team</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div onSubmit={handleTeamSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="teamName" className="text-sm font-medium text-gray-700">
-                    Team Name *
-                  </Label>
-                  <Input 
-                    id="teamName" 
-                    placeholder="Enter your team name" 
-                    value={teamForm.teamName}
-                    onChange={(e) => handleInputChange('teamName', e.target.value)}
-                    className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="eventSelect" className="text-sm font-medium text-gray-700">
-                    Event Name *
-                  </Label>
-                  <Input 
-                    id="eventSelect" 
-                    placeholder="Enter event name" 
-                    value={teamForm.eventName}
-                    onChange={(e) => handleInputChange('eventName', e.target.value)}
-                    className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                    required
-                  />
-                </div>
-              </div>
-              
+          <CardContent className="p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="members" className="text-sm font-medium text-gray-700">
-                  Team Members (Comma Separated) *
+                <Label className="text-sm font-semibold text-gray-700 flex items-center">
+                  <Users className="h-4 w-4 mr-2 text-green-600" />
+                  Team Name *
                 </Label>
-                <Input 
-                  id="members" 
-                  placeholder="Eg: Shreyash, Ananya, Ravi, Priya" 
-                  value={teamForm.members}
-                  onChange={(e) => handleInputChange('members', e.target.value)}
-                  className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                  required
+                <Input
+                  placeholder="Enter an awesome team name"
+                  value={teamForm.teamName}
+                  onChange={e => handleInput('teamName', e.target.value)}
+                  className="border-gray-300 focus:border-green-500 focus:ring-green-500 h-12 text-lg"
                 />
-                <p className="text-xs text-gray-500">
-                  Enter member names separated by commas. You will be added as the team leader automatically.
-                </p>
               </div>
-              
-              <div className="flex justify-end space-x-3">
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  onClick={() => setTeamForm({ teamName: '', eventName: '', members: '' })}
-                >
-                  Reset
-                </Button>
-                <Button 
-                  onClick={handleTeamSubmit}
-                  className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Team
-                </Button>
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-700 flex items-center">
+                  <UserCheck className="h-4 w-4 mr-2 text-green-600" />
+                  Members (RegNo comma-separated) *
+                </Label>
+                <Input
+                  placeholder="e.g. 23BCE1002, 23BCE1003, 23BCE1004"
+                  value={teamForm.members}
+                  onChange={e => handleInput('members', e.target.value)}
+                  className="border-gray-300 focus:border-green-500 focus:ring-green-500 h-12 text-lg"
+                />
               </div>
+            </div>
+            
+            <div className="mt-8 flex justify-end space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setTeamForm({ teamName: '', members: '' })
+                  toast.info("Form cleared", { description: "All fields have been reset." })
+                }}
+                className="px-6 py-3 border-gray-300 hover:bg-gray-50"
+              >
+                Reset Form
+              </Button>
+              <Button
+                onClick={handleCreate}
+                disabled={teamsLoading}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-3 shadow-lg disabled:opacity-50"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                {teamsLoading ? 'Creating...' : 'Create Team'}
+              </Button>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default UserDashboard;
+export default UserDashboard

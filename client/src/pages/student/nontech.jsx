@@ -3,9 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Card, CardContent, CardTitle } from '../../components/ui/card';
 import {
   Calendar, MapPin, Users, Star, Clock,
-  Trophy, Camera, Code, Gift, Search
+  Trophy, Camera, Code, Gift, Search, X
 } from 'lucide-react';
 import { fetchAllFilteredEvents } from '../../stores/student/event-slice/index';
+import EventDetailsModal from '../../components/student/EventDetailsModal';
 
 const gradientClasses = [
   'from-purple-500 to-pink-500',
@@ -28,21 +29,31 @@ const iconMap = {
 const getRandomGradient = () =>
   gradientClasses[Math.floor(Math.random() * gradientClasses.length)];
 
+
 const NonTech = () => {
   const dispatch = useDispatch();
   const { eventList = [], isLoading } = useSelector((state) => state.events || {});
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const openModal = (event) => {
+    setSelectedEvent(event);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedEvent(null);
+    setModalOpen(false);
+  };
 
   useEffect(() => {
     dispatch(fetchAllFilteredEvents({}));
   }, [dispatch]);
 
-  // Debounce logic without lodash
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 500); // debounce delay
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
@@ -52,14 +63,13 @@ const NonTech = () => {
       (event) =>
         event.type === 'Non-Technical' &&
         (event.name.toLowerCase().includes(term) ||
-         event.organisation.toLowerCase().includes(term))
+          event.organisation.toLowerCase().includes(term))
     );
   }, [eventList, debouncedSearch]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-6">
       <div className="max-w-7xl mx-auto mb-12">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-pink-600 to-yellow-500 bg-clip-text text-transparent mb-4">
             Explore Non-Technical Events
@@ -68,30 +78,13 @@ const NonTech = () => {
             From fun fests to cultural carnivals, discover exciting non-tech experiences!
           </p>
         </div>
-
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          {[{
-            label: 'Non-Tech Events',
-            value: filteredList.length || '0',
-            icon: <Gift />,
-            color: 'pink'
-          }, {
-            label: 'Participants',
-            value: '3,000+',
-            icon: <Users />,
-            color: 'rose'
-          }, {
-            label: 'Top Rated',
-            value: '4.7',
-            icon: <Star />,
-            color: 'yellow'
-          }, {
-            label: 'Support',
-            value: '24/7',
-            icon: <Clock />,
-            color: 'green'
-          }].map((stat, i) => (
+          {[
+            { label: 'Tech Events', value: filteredList.length || '0', icon: <Code />, color: 'indigo' },
+            { label: 'Participants', value: '2,000+', icon: <Users />, color: 'blue' },
+            { label: 'Top Rated', value: '4.9', icon: <Star />, color: 'yellow' },
+            { label: 'Support', value: '24/7', icon: <Clock />, color: 'green' },
+          ].map((stat, i) => (
             <div key={i} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
@@ -105,8 +98,6 @@ const NonTech = () => {
             </div>
           ))}
         </div>
-
-        {/* Search Input */}
         <div className="mb-8 max-w-xl mx-auto">
           <div className="flex items-center bg-white shadow-md rounded-full px-4 py-2 border border-gray-200">
             <Search className="text-gray-500 w-5 h-5 mr-2" />
@@ -120,17 +111,22 @@ const NonTech = () => {
           </div>
         </div>
 
-        {/* Events List */}
         {isLoading ? (
           <p className="text-center text-lg text-gray-500">Loading events...</p>
         ) : filteredList.length === 0 ? (
-          <p className="text-center text-lg text-gray-500">No non-technical events found for "{debouncedSearch}".</p>
+          <p className="text-center text-lg text-gray-500">
+            No non-technical events found for "{debouncedSearch}".
+          </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredList.map((event, index) => {
               const gradient = getRandomGradient();
               return (
-                <Card key={index} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white rounded-2xl overflow-hidden hover:-translate-y-2">
+                <Card
+                  key={index}
+                  onClick={() => openModal(event)}
+                  className="cursor-pointer group hover:shadow-2xl transition-all duration-500 border-0 bg-white rounded-2xl overflow-hidden hover:-translate-y-2"
+                >
                   <div className={`h-32 relative bg-gradient-to-r ${gradient}`}>
                     <div className="absolute inset-0 bg-black/10"></div>
                     <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm rounded-full p-2">
@@ -153,7 +149,6 @@ const NonTech = () => {
                     <p className="text-sm text-gray-600 line-clamp-2">
                       {event.description || 'No description available.'}
                     </p>
-
                     <div className="space-y-2 text-xs text-gray-500">
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 mr-2" />
@@ -172,11 +167,10 @@ const NonTech = () => {
                         <span>By {event.organisation}</span>
                       </div>
                     </div>
-
                     <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                       <span className="text-2xl font-bold text-gray-800">₹{event.fees}</span>
                       <button className="bg-gradient-to-r from-pink-500 to-yellow-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200">
-                        Join Now
+                        More Details
                       </button>
                     </div>
                   </CardContent>
@@ -186,6 +180,7 @@ const NonTech = () => {
           </div>
         )}
       </div>
+      <EventDetailsModal event={selectedEvent} isOpen={modalOpen} onClose={closeModal} />
     </div>
   );
 };

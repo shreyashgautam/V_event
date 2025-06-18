@@ -11,6 +11,8 @@ const authRouter = require("./routes/auth/auth-route"); // fix to match file nam
 
 const admineventRoute= require("./routes/admin/Event-route");
 const studenteventRoute= require("./routes/student/Event-route")
+const studentteamroute= require("./routes/student/Team-route")
+
 
 
 const app = express();
@@ -39,6 +41,10 @@ app.use("/api/auth", authRouter);
 // event routes
 app.use("/api/admin/event",admineventRoute);
 app.use("/api/student/event",studenteventRoute );
+
+// team route
+
+app.use('/api/student/team', studentteamroute); 
 
 
 

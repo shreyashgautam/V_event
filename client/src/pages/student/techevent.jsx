@@ -6,6 +6,7 @@ import {
   Trophy, Camera, Code, Gift, Search
 } from 'lucide-react';
 import { fetchAllFilteredEvents } from '../../stores/student/event-slice/index';
+import EventDetailsModal from '../../components/student/EventDetailsModal';
 
 const gradientClasses = [
   'from-purple-500 to-pink-500',
@@ -34,6 +35,18 @@ const Technical = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filteredList, setFilteredList] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const openModal = (event) => {
+    setSelectedEvent(event);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedEvent(null);
+    setModalOpen(false);
+  };
 
   useEffect(() => {
     dispatch(fetchAllFilteredEvents({}));
@@ -116,7 +129,9 @@ const Technical = () => {
             {filteredList.map((event, index) => {
               const gradient = getRandomGradient();
               return (
-                <Card key={index} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white rounded-2xl overflow-hidden hover:-translate-y-2">
+                <Card 
+                onClick={() => openModal(event)}
+                key={index} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white rounded-2xl overflow-hidden hover:-translate-y-2">
                   <div className={`h-32 relative bg-gradient-to-r ${gradient}`}>
                     <div className="absolute inset-0 bg-black/10"></div>
                     <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm rounded-full p-2">
@@ -172,6 +187,7 @@ const Technical = () => {
           </div>
         )}
       </div>
+      <EventDetailsModal event={selectedEvent} isOpen={modalOpen} onClose={closeModal} />
     </div>
   );
 };

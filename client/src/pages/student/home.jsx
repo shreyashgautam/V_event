@@ -6,8 +6,8 @@ import {
   Trophy, Camera, Code, Gift, Search
 } from 'lucide-react';
 import { fetchAllFilteredEvents } from '../../stores/student/event-slice/index';
+import EventDetailsModal from '../../components/student/EventDetailsModal';
 
-// Available gradients
 const gradientClasses = [
   'from-purple-500 to-pink-500',
   'from-indigo-500 to-blue-500',
@@ -35,18 +35,28 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [gradientMap, setGradientMap] = useState({});
+
   useEffect(() => {
     dispatch(fetchAllFilteredEvents({}));
   }, [dispatch]);
 
-  // Debounce logic
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-    }, 500); // debounce time: 500ms
-
+    }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  useEffect(() => {
+    const map = {};
+    eventList.forEach((event) => {
+      map[event.id || event.name] = getRandomGradient();
+    });
+    setGradientMap(map);
+  }, [eventList]);
 
   const filteredEvents = useMemo(() => {
     const term = debouncedSearch.toLowerCase();
@@ -60,7 +70,6 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 p-6">
       <div className="max-w-7xl mx-auto mb-12">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
             Discover Amazing Events
@@ -69,13 +78,11 @@ const Home = () => {
             Join exciting events, learn new skills, and connect with like-minded people
           </p>
         </div>
-
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
           {[
-            { label: 'Total Events', value: eventList.length || '0', icon: <Calendar />, color: 'purple' },
-            { label: 'Participants', value: '5,000+', icon: <Users />, color: 'blue' },
-            { label: 'Avg Rating', value: '4.8', icon: <Star />, color: 'yellow' },
+            { label: 'Tech Events', value: eventList.length || '0', icon: <Code />, color: 'indigo' },
+            { label: 'Participants', value: '2,000+', icon: <Users />, color: 'blue' },
+            { label: 'Top Rated', value: '4.9', icon: <Star />, color: 'yellow' },
             { label: 'Support', value: '24/7', icon: <Clock />, color: 'green' },
           ].map((stat, i) => (
             <div key={i} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100">
@@ -91,7 +98,6 @@ const Home = () => {
             </div>
           ))}
         </div>
-
         {/* Search */}
         <div className="mb-8 max-w-xl mx-auto">
           <div className="flex items-center bg-white shadow-md rounded-full px-4 py-2 border border-gray-200">
@@ -106,7 +112,6 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Event Cards */}
         {isLoading ? (
           <p className="text-center text-lg text-gray-500">Loading events...</p>
         ) : filteredEvents.length === 0 ? (
@@ -114,11 +119,10 @@ const Home = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredEvents.map((event, index) => {
-              const gradient = getRandomGradient();
+              const gradient = gradientMap[event.id || event.name];
 
               return (
                 <Card key={index} className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white rounded-2xl overflow-hidden hover:-translate-y-2">
-                  {/* Colorful Gradient Header */}
                   <div className={`h-32 relative bg-gradient-to-r ${gradient}`}>
                     <div className="absolute inset-0 bg-black/10"></div>
                     <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm rounded-full p-2">
@@ -143,28 +147,22 @@ const Home = () => {
                     </p>
 
                     <div className="space-y-2 text-xs text-gray-500">
-                      <div className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        <span>{new Date(event.date).toLocaleString()}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <MapPin className="w-4 h-4 mr-2" />
-                        <span>{event.venue}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Users className="w-4 h-4 mr-2" />
-                        <span>{event.members} Members</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Trophy className="w-4 h-4 mr-2" />
-                        <span>By {event.organisation}</span>
-                      </div>
+                      <div className="flex items-center"><Calendar className="w-4 h-4 mr-2" />{new Date(event.date).toLocaleString()}</div>
+                      <div className="flex items-center"><MapPin className="w-4 h-4 mr-2" />{event.venue}</div>
+                      <div className="flex items-center"><Users className="w-4 h-4 mr-2" />{event.members} Members</div>
+                      <div className="flex items-center"><Trophy className="w-4 h-4 mr-2" />By {event.organisation}</div>
                     </div>
 
                     <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                       <span className="text-2xl font-bold text-gray-800">₹{event.fees}</span>
-                      <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200">
-                        Join Now
+                      <button
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setShowModal(true);
+                        }}
+                        className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                      >
+                        More Details
                       </button>
                     </div>
                   </CardContent>
@@ -174,6 +172,14 @@ const Home = () => {
           </div>
         )}
       </div>
+
+      {/* Modal */}
+      <EventDetailsModal
+        isOpen={showModal}
+        event={selectedEvent}
+        onClose={() => setShowModal(false)}
+        gradient={gradientMap[selectedEvent?.id || selectedEvent?.name]}
+      />
     </div>
   );
 };
