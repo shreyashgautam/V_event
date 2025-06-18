@@ -18,10 +18,10 @@ router.post("/upload-image", upload.single("my_file"), handleImageUpload);
 router.post("/add", addMerch);
 
 // Edit merch
-router.put("/edit/:id", editMerch);
+router.put("/edit/:merchId", editMerch);
 
 // Delete merch
-router.delete("/delete/:id", deleteMerch);
+router.delete("/delete/:merchId", deleteMerch);
 
 // Fetch all merch
 router.get("/get", fetchAllMerch);

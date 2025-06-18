@@ -49,12 +49,13 @@ const fetchAllMerch = async (req, res) => {
 
 const editMerch = async (req, res) => {
   try {
-    const { merchId } = req.params;
+    const { merchId } = req.params; // this is custom merchId like "MERCH03"
     const updatedData = req.body;
 
-    if (updatedData.merchId) {
+    // Check if the merchId is being changed and it already exists
+    if (updatedData.merchId && updatedData.merchId !== merchId) {
       const existing = await Merch.findOne({ merchId: updatedData.merchId });
-      if (existing && existing._id.toString() !== merchId) {
+      if (existing) {
         return res.status(400).json({
           success: false,
           message: "Another merch with this ID already exists",
@@ -62,7 +63,7 @@ const editMerch = async (req, res) => {
       }
     }
 
-    const merch = await Merch.findByIdAndUpdate(merchId, updatedData, { new: true });
+    const merch = await Merch.findOneAndUpdate({ merchId }, updatedData, { new: true });
 
     if (!merch) {
       return res.status(404).json({ success: false, message: "Merch not found" });
@@ -75,10 +76,11 @@ const editMerch = async (req, res) => {
   }
 };
 
+
 const deleteMerch = async (req, res) => {
   try {
     const { merchId } = req.params;
-    const merch = await Merch.findByIdAndDelete(merchId);
+    const merch = await Merch.findOneAndDelete({ merchId });
 
     if (!merch) {
       return res.status(404).json({ success: false, message: "Merch not found" });

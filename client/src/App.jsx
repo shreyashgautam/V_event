@@ -27,6 +27,10 @@ import Technical from './pages/student/techevent';
 import NonTech from './pages/student/nontech';
 import UserDashboard from './pages/student/dashboard';
 import Merchandise from './pages/student/merch';
+import Studentinfo from './pages/admin/studentinfo';
+import AdminMerchandise from './pages/admin/merchandise';
+import AdminEvent from './pages/admin/event';
+import AdminStudentinfo from './pages/admin/studentinfo';
 
 function App() {
   const dispatch = useDispatch();
@@ -66,6 +70,13 @@ function App() {
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="event" element={<AdminEvent />} />
+          <Route path="merch" element={<AdminMerchandise />} />
+          <Route path="studentinfo" element={<AdminStudentinfo />} />
+
+
+
+
         </Route>
 
         {/* Coordinator Routes */}
