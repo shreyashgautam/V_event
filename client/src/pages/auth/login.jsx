@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import { toast } from "sonner"; // ✅ Fixed import
+import { toast, Toaster } from "sonner";
 import { Loader2, Calendar, Sparkles } from "lucide-react";
 
 export default function Login() {
@@ -210,6 +210,9 @@ export default function Login() {
             © 2024 V_Event • Connecting students through memorable experiences
           </p>
         </div>
+
+        {/* 🟢 Sonner Toaster Component */}
+        <Toaster position="top-center" richColors closeButton />
       </div>
 
       <style jsx>{`

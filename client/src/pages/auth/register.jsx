@@ -35,20 +35,32 @@ export default function Register() {
       toast.success(`Welcome to V_Event, ${user.userName}! 🎉`, {
         description: "Your journey starts now.",
         duration: 4000,
+        style: {
+          background: "#ECFDF5", // emerald-50
+          color: "#065F46",      // emerald-900
+          border: "1px solid #34D399",
+        },
       });
+
       setFormData({
         userName: "",
         regNo: "",
         email: "",
         password: "",
       });
-      setTimeout(() => navigate("auth/login"), 3000); // optional: redirect to login
+
+      setTimeout(() => navigate("/auth/login"), 3000);
     }
 
     if (error) {
       toast.error("Registration Failed", {
         description: error,
         duration: 4000,
+        style: {
+          background: "#FEF2F2", // red-50
+          color: "#991B1B",       // red-800
+          border: "1px solid #F87171",
+        },
       });
     }
   }, [isAuthenticated, error, user]);
@@ -144,7 +156,7 @@ export default function Register() {
             <div className="text-center pt-4">
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}
-                <a href="login" className="font-semibold text-emerald-600 hover:underline">
+                <a href="/auth/login" className="font-semibold text-emerald-600 hover:underline">
                   Sign in here
                 </a>
               </p>
