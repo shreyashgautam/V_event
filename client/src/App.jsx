@@ -70,9 +70,10 @@ function App() {
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="stuinfo" element={<AdminStudentinfo />} />
           <Route path="event" element={<AdminEvent />} />
           <Route path="merch" element={<AdminMerchandise />} />
-          <Route path="studentinfo" element={<AdminStudentinfo />} />
+          
 
 
 
