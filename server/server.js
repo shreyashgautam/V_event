@@ -17,7 +17,10 @@ const studentteamroute= require("./routes/student/Team-route")
 const adminmerchRoute= require("./routes/admin/Merch-route");
 const studentmerchRoute= require("./routes/student/Merch-route")
 
+const adminuserdetails = require('./routes/admin/user-details-route');
+const studentregisterRoute= require("./routes/student/register-route")
 
+const adminRegisterRoute = require("./routes/admin/register-route");
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -54,6 +57,17 @@ app.use('/api/student/team', studentteamroute);
 
 app.use('/api/admin/merch', adminmerchRoute); 
 app.use('/api/student/merch', studentmerchRoute); 
+
+// userdetails admin
+app.use('/api/admin/studinfo', adminuserdetails); 
+
+// register route
+app.use('/api/student/reg', studentregisterRoute); 
+app.use("/api/admin/registers", adminRegisterRoute);
+
+
+
+
 
 
 

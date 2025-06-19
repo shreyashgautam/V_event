@@ -7,6 +7,9 @@ const navLinks = [
   { name: 'Events', path: '/admin/event' },
   { name: 'Merchandise', path: '/admin/merch' },
   { name: 'Student Info', path: '/admin/stuinfo' },
+  { name: 'Registered Event', path: '/admin/eventreg' },
+
+  
 ];
 
 const AdminNavbar = () => {
