@@ -21,6 +21,9 @@ const adminuserdetails = require('./routes/admin/user-details-route');
 const studentregisterRoute= require("./routes/student/register-route")
 
 const adminRegisterRoute = require("./routes/admin/register-route");
+// payemnt
+const paymentRoute = require("./routes/student/payment-route");
+
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -67,7 +70,7 @@ app.use("/api/admin/registers", adminRegisterRoute);
 
 
 
-
+app.use("/api/student/payment", paymentRoute);
 
 
 
