@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const crypto = require("crypto");
 const razorpay = require("../../helpers/razorpayInstance");
+const { sendPaymentConfirmationMail } = require("../../helpers/mailer");
+const User = require("../../models/User"); // import User model
 
 // ✅ Create order (auto-capture enabled)
 router.post("/create-order", async (req, res) => {
@@ -9,10 +11,10 @@ router.post("/create-order", async (req, res) => {
     const { amount } = req.body;
 
     const options = {
-      amount: amount, // Amount in paisa
+      amount,
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
-      payment_capture: 1, // Auto-capture enabled
+      payment_capture: 1,
     };
 
     const order = await razorpay.orders.create(options);
@@ -29,10 +31,10 @@ router.post("/create-order", async (req, res) => {
   }
 });
 
-// ✅ Verify payment signature
-router.post("/verify-payment", (req, res) => {
+// ✅ Verify payment and send confirmation email
+router.post("/verify-payment", async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, amount, regNo } = req.body;
 
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
     const expectedSignature = crypto
@@ -40,18 +42,27 @@ router.post("/verify-payment", (req, res) => {
       .update(body)
       .digest("hex");
 
-    if (expectedSignature === razorpay_signature) {
-      res.status(200).json({ success: true, message: "Payment verified" });
-    } else {
-      res.status(400).json({ success: false, message: "Invalid signature" });
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ success: false, message: "Invalid signature" });
     }
+
+    // ✅ Fetch user by regNo
+    const user = await User.findOne({ regNo });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // ✅ Send confirmation email
+    await sendPaymentConfirmationMail(user, razorpay_order_id, razorpay_payment_id, amount);
+
+    res.status(200).json({ success: true, message: "Payment verified and email sent" });
   } catch (err) {
     console.error("Verification error:", err);
     res.status(500).json({ success: false, message: "Payment verification failed" });
   }
 });
 
-// ✅ Success route (optional confirmation after redirect)
+// ✅ Optional Success Page
 router.get("/success", (req, res) => {
   res.send(`
     <html>
