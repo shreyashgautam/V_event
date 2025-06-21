@@ -38,7 +38,7 @@ const AdminMerchandise = () => {
 
     try {
       const res = await axios.post(
-        'http://localhost:5001/api/admin/merch/upload-image',
+        'https://v-event-hp33.vercel.app/api/admin/merch/upload-image',
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },

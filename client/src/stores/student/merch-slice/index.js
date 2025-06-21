@@ -21,7 +21,7 @@ export const fetchFilteredMerch = createAsyncThunk(
     }
 
     const response = await axios.get(
-      `http://localhost:5001/api/student/merch/get?${params.toString()}`
+      `https://v-event-hp33.vercel.app/api/student/merch/get?${params.toString()}`
     );
 
     return response.data; // { success: true, data: [...] }
@@ -32,7 +32,7 @@ export const fetchMerchDetails = createAsyncThunk(
   "merch/fetchMerchDetails",
   async (merchId) => {
     const response = await axios.get(
-      `http://localhost:5001/api/student/merch/get/${merchId}`
+      `https://v-event-hp33.vercel.app/api/student/merch/get/${merchId}`
     );
     return response.data; // { success: true, data: {...} }
   }

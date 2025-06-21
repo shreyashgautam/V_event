@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5001/api/admin/buy"; // adjust if deployed
+const BASE_URL = "https://v-event-hp33.vercel.app/api/admin/buy"; // adjust if deployed
 
 // ✅ 1. Fetch all buys
 export const fetchAllBuys = createAsyncThunk("adminBuy/fetchAllBuys", async (_, thunkAPI) => {

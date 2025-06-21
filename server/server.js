@@ -43,7 +43,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend
+    origin: "https://v-event-phi.vercel.app/", // your frontend
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   })

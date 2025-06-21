@@ -16,7 +16,7 @@ export const fetchAllFilteredEvents = createAsyncThunk(
     });
 
     const result = await axios.get(
-      `http://localhost:5001/api/student/event/get?${query}`
+      `https://v-event-hp33.vercel.app/api/student/event/get?${query}`
     );
 
     return result?.data;
@@ -27,7 +27,7 @@ export const fetchEventDetails = createAsyncThunk(
   "events/fetchEventDetails",
   async (id) => {
     const result = await axios.get(
-      `http://localhost:5001/api/student/event/get/${id}`
+      `https://v-event-hp33.vercel.app/api/student/event/get/${id}`
     );
 
     return result?.data;

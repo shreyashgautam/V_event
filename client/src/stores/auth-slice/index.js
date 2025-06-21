@@ -14,7 +14,7 @@ export const registerUser = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/auth/register",
+        "https://v-event-hp33.vercel.app/api/auth/register",
         formData,
         { withCredentials: true }
       );
@@ -31,7 +31,7 @@ export const loginUser = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:5001/api/auth/login",
+        "https://v-event-hp33.vercel.app/api/auth/login",
         formData,
         { withCredentials: true }
       );
@@ -45,7 +45,7 @@ export const loginUser = createAsyncThunk(
 // ✅ LOGOUT
 export const logout = createAsyncThunk("/auth/logout", async () => {
   const response = await axios.post(
-    "http://localhost:5001/api/auth/logout",
+    "https://v-event-hp33.vercel.app/api/auth/logout",
     {},
     { withCredentials: true }
   );
@@ -55,7 +55,7 @@ export const logout = createAsyncThunk("/auth/logout", async () => {
 // ✅ CHECK AUTH
 export const checkAuth = createAsyncThunk("/auth/checkauth", async () => {
   const response = await axios.get(
-    "http://localhost:5001/api/auth/check-auth",
+    "https://v-event-hp33.vercel.app/api/auth/check-auth",
     {
       withCredentials: true,
       headers: {

@@ -15,7 +15,7 @@ export const fetchAllStudents = createAsyncThunk(
   "admin/fetchAllStudents",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("http://localhost:5001/api/admin/studinfo/get");
+      const response = await axios.get("https://v-event-hp33.vercel.app/api/admin/studinfo/get");
       return response.data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Failed to fetch students");
@@ -28,7 +28,7 @@ export const deleteStudentById = createAsyncThunk(
   "admin/deleteStudentById",
   async (studentId, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`http://localhost:5001/api/admin/studinfo/delete/${studentId}`);
+      const response = await axios.delete(`https://v-event-hp33.vercel.app/api/admin/studinfo/delete/${studentId}`);
       return { id: studentId, message: response.data.message };
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Failed to delete student");

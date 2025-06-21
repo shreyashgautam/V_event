@@ -14,7 +14,7 @@ export const fetchAllRegistrations = createAsyncThunk(
   "admin/fetchAllRegistrations",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get("http://localhost:5001/api/admin/registers/all");
+      const res = await axios.get("https://v-event-hp33.vercel.app/api/admin/registers/all");
       return res.data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Failed to fetch registrations");
@@ -27,7 +27,7 @@ export const fetchByEventId = createAsyncThunk(
   "admin/fetchByEventId",
   async (eventId, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`http://localhost:5001/api/admin/registers/eventid/${eventId}`);
+      const res = await axios.get(`https://v-event-hp33.vercel.app/api/admin/registers/eventid/${eventId}`);
       return res.data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Failed to fetch by event ID");
@@ -40,7 +40,7 @@ export const fetchByEventName = createAsyncThunk(
   "admin/fetchByEventName",
   async (eventName, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`http://localhost:5001/api/admin/registers/eventname/${eventName}`);
+      const res = await axios.get(`https://v-event-hp33.vercel.app/api/admin/registers/eventname/${eventName}`);
       return res.data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Failed to fetch by event name");
@@ -53,7 +53,7 @@ export const deleteRegistration = createAsyncThunk(
   "admin/deleteRegistration",
   async (regId, { rejectWithValue }) => {
     try {
-      const res = await axios.delete(`http://localhost:5001/api/admin/registers/delete/${regId}`);
+      const res = await axios.delete(`https://v-event-hp33.vercel.app/api/admin/registers/delete/${regId}`);
       return { regId, message: res.data.message };
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Failed to delete registration");

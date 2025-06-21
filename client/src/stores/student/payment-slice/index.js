@@ -3,7 +3,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5001/api/student/payment";
+const BASE_URL = "https://v-event-hp33.vercel.app/api/student/payment";
 
 // ✅ Create Razorpay Order
 export const createRazorpayOrder = createAsyncThunk(

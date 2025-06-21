@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5001/api/student/buy"; // Update if hosted
+const BASE_URL = "https://v-event-hp33.vercel.app/api/student/buy"; // Update if hosted
 
 // ✅ 1. Buy merch
 export const buyMerch = createAsyncThunk("studentBuy/buyMerch", async ({ regNo, merchId }, thunkAPI) => {

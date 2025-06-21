@@ -4,7 +4,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 // BASE URL
-const BASE_URL = 'http://localhost:5001/api/student/team'; // Adjust if hosted elsewhere
+const BASE_URL = 'https://v-event-hp33.vercel.app/api/student/team'; // Adjust if hosted elsewhere
 
 // Async thunk: Create team
 export const createTeam = createAsyncThunk(
