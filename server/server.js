@@ -25,6 +25,10 @@ const adminRegisterRoute = require("./routes/admin/register-route");
 const paymentRoute = require("./routes/student/payment-route");
 
 
+const adminBuyRoutes = require("./routes/admin/buy-route");
+const studentBuyRoutes = require("./routes/student/buy-route");
+
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 
@@ -71,6 +75,12 @@ app.use("/api/admin/registers", adminRegisterRoute);
 
 
 app.use("/api/student/payment", paymentRoute);
+
+
+app.use("/api/admin/buy", adminBuyRoutes);
+
+app.use("/api/student/buy", studentBuyRoutes);
+
 
 
 

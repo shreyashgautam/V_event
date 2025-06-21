@@ -9,6 +9,9 @@ import adminuserdetailsSlice from '../stores/admin/user-details-slice';
 import adminRegisterSlice from '../stores/admin/register-event-slice'
 import registerEventSlice from '../stores/student/register-slice'
 import paymentSlice from '../stores/student/payment-slice'
+import adminBuySlice from '../stores/admin/admin-buy-slice'
+
+import studentBuySlice from '../stores/student/buy-slice'
 
 const store=configureStore({
     reducer:{
@@ -21,7 +24,9 @@ const store=configureStore({
         adminUser:adminuserdetailsSlice,
         adminRegister:adminRegisterSlice,
         studentRegister:registerEventSlice,
-        paymentSlice:paymentSlice
+        paymentSlice:paymentSlice,
+        adminBuy:adminBuySlice,
+        studentBuy:studentBuySlice
 
         
         

@@ -31,11 +31,25 @@ const AdminMerchandise = () => {
     dispatch(fetchMerch());
   }, [dispatch]);
 
-  const handleUpload = async () => {
-    const data = new FormData();
-    data.append('my_file', file);
-    const res = await axios.post('http://localhost:5001/api/admin/merch/upload-image', data);
-    return res.data.result.url;
+ 
+  const handleUpload = async (file) => {
+    const formData = new FormData();
+    formData.append('my_file', file);
+
+    try {
+      const res = await axios.post(
+        'http://localhost:5001/api/admin/merch/upload-image',
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true,
+        }
+      );
+      return res.data.result.secure_url;
+    } catch (error) {
+      alert('Image upload failed');
+      return '';
+    }
   };
 
   const handleSubmit = async (e) => {

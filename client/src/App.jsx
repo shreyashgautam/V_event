@@ -32,6 +32,7 @@ import AdminMerchandise from './pages/admin/merchandise';
 import AdminEvent from './pages/admin/event';
 import AdminStudentinfo from './pages/admin/studentinfo';
 import AdminRegistered from './pages/admin/AdminRegistered';
+import AdminBuy from './pages/admin/AdminBuy';
 
 function App() {
   const dispatch = useDispatch();
@@ -75,6 +76,9 @@ function App() {
           <Route path="event" element={<AdminEvent />} />
           <Route path="eventreg" element={<AdminRegistered />} />
           <Route path="merch" element={<AdminMerchandise />} />
+          <Route path="buy" element={<AdminBuy />} />
+
+          
 
           
           

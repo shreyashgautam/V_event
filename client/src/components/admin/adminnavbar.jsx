@@ -8,6 +8,8 @@ const navLinks = [
   { name: 'Merchandise', path: '/admin/merch' },
   { name: 'Student Info', path: '/admin/stuinfo' },
   { name: 'Registered Event', path: '/admin/eventreg' },
+  { name: 'Merch Sale', path: '/admin/buy' },
+
 
   
 ];
