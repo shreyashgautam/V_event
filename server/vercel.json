@@ -10,6 +10,12 @@
     "routes": [
       {
         "src": "/(.*)",
+        "dest": "server.js"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/(.*)",
         "headers": [
           {
             "key": "Access-Control-Allow-Credentials",
@@ -27,8 +33,7 @@
             "key": "Access-Control-Allow-Headers",
             "value": "X-CSRF-Token, X-Requested-With, Accept, Content-Type, Authorization"
           }
-        ],
-        "dest": "server.js"
+        ]
       }
     ]
   }
