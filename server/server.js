@@ -41,9 +41,19 @@ mongoose
 // ✅ Middleware
 app.use(express.json());
 app.use(cookieParser());
+const allowedOrigins = [
+  "https://v-event-phi.vercel.app", // frontend domain
+];
+
 app.use(
   cors({
-    origin: "https://v-event-phi.vercel.app", // your frontend
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
